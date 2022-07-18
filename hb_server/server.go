@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	heartbeat_pb "heartbeat/heartbeat_pb"
+	heartbeat_pb "bmutziu.me/hb_proto"
 	"io"
 	"log"
 	"net"
@@ -51,7 +51,7 @@ func (*server) NormalAbnormalHeartBeat(stream heartbeat_pb.HeartBeatService_Norm
 		}
 		bpm := req.GetHeartbeat().Bpm
 		var result string
-		if bpm >= 60 && bpm <= 100 {
+		if bpm >= 27 && bpm <= 73 {
 			result = fmt.Sprintf("BPM of %v is Normal", bpm)
 		} else {
 			result = fmt.Sprintf("BPM of %v is Abnormal", bpm)

@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	heartbeat_pb "heartbeat/heartbeat_pb"
+	heartbeat_pb "bmutziu.me/hb_proto"
 	"io"
 	"log"
 	"math/rand"
@@ -28,7 +28,7 @@ var wg sync.WaitGroup
 func NormalAbnormalHeartBeat(c heartbeat_pb.HeartBeatServiceClient) {
 	stream, err := c.NormalAbnormalHeartBeat(context.Background())
 	handleError(err)
-	for t := 0; t < 10; t++ {
+	for t := 0; t < 4; t++ {
 		newBpm := generateHeartBeat()
 
 		newNormalAbnormalHeartBeatRequest := &heartbeat_pb.NormalAbnormalHeartBeatRequest{
@@ -59,7 +59,7 @@ func NormalAbnormalHeartBeat(c heartbeat_pb.HeartBeatServiceClient) {
 
 func HeartBeatHistory(c heartbeat_pb.HeartBeatServiceClient) {
 	heartBeatHistoryRequest := &heartbeat_pb.HeartBeatHistoryRequest{
-		Username: "mano",
+		Username: "bmutziulhb",
 	}
 	res_stream, _ := c.HeartBeatHistory(context.Background(), heartBeatHistoryRequest)
 
@@ -76,9 +76,9 @@ func HeartBeatHistory(c heartbeat_pb.HeartBeatServiceClient) {
 func LiveHeartBeat(c heartbeat_pb.HeartBeatServiceClient) {
 	stream, err := c.LiveHeartBeat(context.Background())
 	handleError(err)
-	var username = "mano"
+	var username = "bmutziulhb"
 
-	for t := 0; t < 5; t++ {
+	for t := 0; t < 8; t++ {
 		newBpm := generateHeartBeat()
 		newLiveHeartBeatRequest := &heartbeat_pb.LiveHeartBeatRequest{
 			Heartbeat: &heartbeat_pb.HeartBeat{
@@ -87,6 +87,7 @@ func LiveHeartBeat(c heartbeat_pb.HeartBeatServiceClient) {
 			},
 		}
 
+		fmt.Println("Request Sent: ", newLiveHeartBeatRequest)
 		stream.Send(newLiveHeartBeatRequest)
 	}
 
@@ -98,8 +99,8 @@ func LiveHeartBeat(c heartbeat_pb.HeartBeatServiceClient) {
 func HeartBeat(c heartbeat_pb.HeartBeatServiceClient) {
 	heartbeatRequest := heartbeat_pb.HeartBeatRequest{
 		Heartbeat: &heartbeat_pb.HeartBeat{
-			Bpm:      99,
-			Username: "mano",
+			Bpm:      73,
+			Username: "bmutziu",
 		},
 	}
 
@@ -120,6 +121,5 @@ func main() {
 	// HeartBeat(c)
 	// LiveHeartBeat(c)
 	// HeartBeatHistory(c)
-
 	NormalAbnormalHeartBeat(c)
 }
