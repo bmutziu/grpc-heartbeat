@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
-	heartbeat_pb "bmutziu.me/hb_proto"
 	"io"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"strconv"
+
+	heartbeat_pb "bmutziu.me/hb_proto"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -63,7 +64,7 @@ func (*server) NormalAbnormalHeartBeat(stream heartbeat_pb.HeartBeatService_Norm
 }
 
 func (*server) HeartBeatHistory(req *heartbeat_pb.HeartBeatHistoryRequest, stream heartbeat_pb.HeartBeatService_HeartBeatHistoryServer) error {
-	fmt.Println("HeartBeatHistory() called")
+	fmt.Println("HeartBeatHistory() called ...")
 	username := req.GetUsername()
 
 	filter := bson.M{
