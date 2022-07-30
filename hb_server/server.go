@@ -3,18 +3,21 @@ package main
 import (
 	"context"
 	"fmt"
-	heartbeat_pb "bmutziu.me/hb_proto"
 	"io"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"strconv"
+	"time"
+
+	heartbeat_pb "bmutziu.me/hb_proto"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"google.golang.org/grpc"
 )
 
@@ -30,13 +33,13 @@ type server struct {
 	heartbeat_pb.UnimplementedHeartBeatServiceServer
 }
 
-type heart_item struct {
-	Id       primitive.ObjectID `bson:"_id,omitempty"`
+type heartitem struct {
+	ID       primitive.ObjectID `bson:"_id,omitempty"`
 	Bpm      int32              `bson:"bpm"`
 	Username string             `bson:"username"`
 }
 
-func pushUserToDb(ctx context.Context, item heart_item) primitive.ObjectID {
+func pushUserToDB(ctx context.Context, item heartitem) primitive.ObjectID {
 	res, err := collection.InsertOne(ctx, item)
 	handleError(err)
 
@@ -69,13 +72,13 @@ func (*server) HeartBeatHistory(req *heartbeat_pb.HeartBeatHistoryRequest, strea
 	filter := bson.M{
 		"username": username,
 	}
-	var result_data []heart_item
+	var resultdata []heartitem
 	cursor, err := collection.Find(context.TODO(), filter)
 	handleError(err)
 
-	cursor.All(context.Background(), &result_data)
+	cursor.All(context.Background(), &resultdata)
 
-	for _, v := range result_data {
+	for _, v := range resultdata {
 		res := &heartbeat_pb.HeartBeatHistoryResponse{
 			Heartbeat: &heartbeat_pb.HeartBeat{
 				Bpm:      v.Bpm,
@@ -103,7 +106,7 @@ func (*server) LiveHeartBeat(stream heartbeat_pb.HeartBeatService_LiveHeartBeatS
 		}
 
 		bpm := req.GetHeartbeat().GetBpm()
-		docid := pushUserToDb(context.TODO(), heart_item{
+		docid := pushUserToDB(context.TODO(), heartitem{
 			Bpm:      req.GetHeartbeat().GetBpm(),
 			Username: req.GetHeartbeat().GetUsername(),
 		})
@@ -116,12 +119,12 @@ func (*server) UserHeartBeat(ctx context.Context, req *heartbeat_pb.HeartBeatReq
 	heartbeat := req.GetHeartbeat().GetBpm()
 	username := req.GetHeartbeat().GetUsername()
 
-	newHeartItem := heart_item{
+	newHeartItem := heartitem{
 		Bpm:      int32(heartbeat),
 		Username: username,
 	}
 
-	docid := pushUserToDb(ctx, newHeartItem)
+	docid := pushUserToDB(ctx, newHeartItem)
 
 	result := "User HeartBeat is " + strconv.Itoa(int(heartbeat)) + ", docid = " + docid.String() + "\n"
 
@@ -142,17 +145,23 @@ func main() {
 
 	go func() {
 		fmt.Println("Starting Server")
-		if err := s.Serve(lis); err != nil {
+		if errbis := s.Serve(lis); errbis != nil {
 			handleError(err)
 		}
 	}()
 
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	// client, errbis := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	err = client.Ping(ctx, readpref.Primary())
 	handleError(err)
 	fmt.Println("MongoDB connected")
 
-	err = client.Connect(context.TODO())
-	handleError(err)
+	// err = client.Connect(context.TODO())
+	// handleError(err)
 
 	collection = client.Database("hb").Collection("heartbeat")
 	ch := make(chan os.Signal, 1)
@@ -160,7 +169,7 @@ func main() {
 
 	<-ch
 	fmt.Println("Closing MongoDB connection")
-	if err := client.Disconnect(context.TODO()); err != nil {
+	if err := client.Disconnect(ctx); err != nil {
 		handleError(err)
 	}
 

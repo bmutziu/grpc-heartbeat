@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	heartbeat_pb "bmutziu.me/hb_proto"
 	"io"
 	"log"
 	"math/rand"
 	"sync"
+
+	heartbeat_pb "bmutziu.me/hb_proto"
 
 	"google.golang.org/grpc"
 )
@@ -61,10 +62,10 @@ func HeartBeatHistory(c heartbeat_pb.HeartBeatServiceClient) {
 	heartBeatHistoryRequest := &heartbeat_pb.HeartBeatHistoryRequest{
 		Username: "bmutziulhb",
 	}
-	res_stream, _ := c.HeartBeatHistory(context.Background(), heartBeatHistoryRequest)
+	resStream, _ := c.HeartBeatHistory(context.Background(), heartBeatHistoryRequest)
 
 	for {
-		msg, err := res_stream.Recv()
+		msg, err := resStream.Recv()
 		if err == io.EOF {
 			break
 		}
