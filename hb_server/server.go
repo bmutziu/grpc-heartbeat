@@ -13,6 +13,8 @@ import (
 
 	heartbeat_pb "bmutziu.me/hb_proto"
 
+	heartbeat_pb "bmutziu.me/hb_proto"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -115,7 +117,7 @@ func (*server) LiveHeartBeat(stream heartbeat_pb.HeartBeatService_LiveHeartBeatS
 }
 
 func (*server) UserHeartBeat(ctx context.Context, req *heartbeat_pb.HeartBeatRequest) (*heartbeat_pb.HeartBeatResponse, error) {
-	fmt.Println("HeartBeat() called")
+	fmt.Println("HeartBeat() called ...")
 	heartbeat := req.GetHeartbeat().GetBpm()
 	username := req.GetHeartbeat().GetUsername()
 
