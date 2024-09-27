@@ -13,6 +13,8 @@ import (
 
 	heartbeat_pb "bmutziu.me/hb_proto"
 
+	heartbeat_pb "bmutziu.me/hb_proto"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -66,7 +68,7 @@ func (*server) NormalAbnormalHeartBeat(stream heartbeat_pb.HeartBeatService_Norm
 }
 
 func (*server) HeartBeatHistory(req *heartbeat_pb.HeartBeatHistoryRequest, stream heartbeat_pb.HeartBeatService_HeartBeatHistoryServer) error {
-	fmt.Println("HeartBeatHistory() called")
+	fmt.Println("HeartBeatHistory() called ...")
 	username := req.GetUsername()
 
 	filter := bson.M{
